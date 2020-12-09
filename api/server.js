@@ -1,17 +1,15 @@
+const express = require('express');
 const session = require('express-session');
 const knexSessionStore = require('connect-session-knex')(session);
-const express = require('express');
 const cors = require("cors");
+const helmet = require("helmet");
+const restricted = require("../api/auth/retricted-middleware.js")
 
 const server = express();
 
-const helmet = require("helmet");
-
-
-
 server.use(express.json())
 server.use(cors());
-
+server.use(helmet());
 server.use(logger)
 
 server.get('/', (req, res) => {
@@ -22,16 +20,11 @@ server.get('/', (req, res) => {
 const usersRouter = require("./users/users-router.js")
 const authRouter = require("./auth/auth-router.js")
 
-
-
-server.use("/api/users", usersRouter);
-server.use("/api/auth", authRouter);
-
 const sessionConfig = {
-    name: 'sksession',
-    secret: 'myspeshulsecret',
+    name: 'PineapplePizza',
+    secret: 'dontcurseme',
     cookie: {
-      maxAge: 1000 * 60 * 60,
+      maxAge: 3600 * 1000,
       secure: false, // should be true in production
       httpOnly: true
     },
@@ -44,12 +37,14 @@ const sessionConfig = {
         tablename: "sessions",
         sidfieldname: "sid",
         createtable: true,
-        clearInterval: 1000 * 60 * 60
+        clearInterval: 3600 * 1000
       }
     )
   }
-
   server.use(session(sessionConfig));
+  server.use("/api/users", restricted, usersRouter);
+  server.use("/api/auth", authRouter);
+  
 
 
 function logger(req, res, next) {

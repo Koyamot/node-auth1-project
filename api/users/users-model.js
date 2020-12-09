@@ -1,30 +1,35 @@
-const db = require("../../data/connection.js");
+const db = require("../../data/dbConfig.js");
 
 module.exports = {
   add,
   find,
   findBy,
-  findById,
 };
 
-function find() {
-  return db("users").select("id", "username").orderBy("id");
-}
+async function find() {
 
-function findBy(filter) {
-  return db("users").where(filter).orderBy("id");
-}
-
-async function add(user) {
   try {
-    const [id] = await db("users").insert(user, "id");
-
-    return findById(id);
+    return await db("users").select("id", "username", "password", "email").orderBy("id");
   } catch (error) {
     throw error;
   }
+  
 }
 
-function findById(id) {
-  return db("users").where({ id }).first();
+async function findBy(filter) {
+  try {
+      const user = await db('users').where(filter).orderBy('id');
+      return user;
+  } catch (err) {
+      throw err;
+  }
+}
+
+async function add(userData) {
+  try {
+      const {id} = await db('users').insert(userData);
+      return id
+  } catch (err) {
+      throw err;
+  }
 }
